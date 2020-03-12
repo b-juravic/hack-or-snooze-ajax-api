@@ -11,6 +11,7 @@ $(async function() {
   const $navLogin = $("#nav-login");
   const $navLogOut = $("#nav-logout");
   const $navLoggedIn = $("#nav-logged-in");
+  const $navSubmit = $("#nav-submit");
 
 
 
@@ -83,6 +84,41 @@ $(async function() {
     $createAccountForm.slideToggle();
     $allStoriesList.toggle();
   });
+
+  /**
+   * Event Handler for revealing new story form
+   */
+  $navSubmit.on("click", function(evt) {
+    evt.preventDefault();
+    $submitForm.slideToggle();
+  });
+
+  /**
+   * Event Handler for submitting a new story
+   */
+
+   $submitForm.on("submit", async function(evt){
+    evt.preventDefault();
+
+    // grab the required fields
+    let author = $("#author").val();
+    let title = $("#title").val();
+    let url = $("#url").val();
+
+    // take values and create story obj for addStory
+    let requestStoryObj = {
+      author,
+      title,
+      url
+    }
+    // call the addStory method, which calls the API and then builds a new story
+    const story = await StoryList.addStory(currentUser, requestStoryObj);
+    // console.log(story);
+    
+    // prepend new story to DOM
+    let readyStory = generateStoryHTML(story);
+    $allStoriesList.prepend(readyStory);
+   })
 
   /**
    * Event handler for Navigation to Homepage
