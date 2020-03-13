@@ -137,14 +137,46 @@ $(async function() {
    $($allStoriesList).on("click", ".star", async function() {
      // identify storyId on applicable story to favorite
      let storyId = event.target.parentElement.id;
+     let favStarClass = event.target.className;
+     console.log(favStarClass);
 
      // call addFavoriteStory methos which call the API and adds story as a favorote
-     let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
-     console.log(addedFavorite);
+    //  let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
 
-     // NEXT NEED TO PUSH ADDED STORY TO currentUser.favorites array?
 
-   });
+    // get storyId
+    // check if existing favorite
+    // if not, fire off post request to add
+    // toggle icon class
+
+
+
+      if (checkFavoriteStories(storyId)) {
+        //send delete post request
+        favStarClass = "far fa-star star";
+        console.log("in else statement", event.target.className);
+      }
+      else {
+        let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
+        favStarClass = "fas fa-star star";
+        console.log("in if statement", event.target.className);
+      }
+  });
+
+   /**
+    * Check currentUser favorites
+    */
+
+    function checkFavoriteStories(storyId) {
+      for (let i = 0; i < currentUser.favorites.length; i++) {
+        let existingFav = currentUser.favorites[i];
+
+        if (existingFav.storyId === storyId) {
+          return  true;
+        }
+      }
+      return false;
+    }
 
   /**
    * On page load, checks local storage to see if the user is already logged in.
@@ -213,11 +245,26 @@ $(async function() {
 
   function generateStoryHTML(story) {
     let hostName = getHostName(story.url);
+    let favStarClass = "far fa-star star";
+
+    // assigns favorite filled in star icon if story exists in currentUsers favorites array
+    if(currentUser) {
+      for (let i = 0; i < currentUser.favorites.length; i++) {
+        let currentFav = currentUser.favorites[i];
+
+        if (currentFav.storyId === story.storyId) {
+          favStarClass = "fas fa-star star";
+        }
+        else {
+          favStarClass = "far fa-star star";
+        }
+      }
+    }
 
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
-        <i class="far fa-star star"></i>
+        <i class="${favStarClass}"></i>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>

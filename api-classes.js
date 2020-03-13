@@ -167,6 +167,9 @@ class User {
         token: currentUser.loginToken
       });
 
+      // Replaces currentUser favorites with updated favorites
+      currentUser.favorites = response.data.user.favorites;
+
       return response;
   }
 
