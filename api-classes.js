@@ -47,7 +47,7 @@ class StoryList {
     // TODO - Implement this functions!
     // this function should return the newly created story so it can be used in
     // the script.js file where it will be appended to the DOM
-    
+
     const response = await axios.post(`${BASE_URL}/stories`, {
       token: user.loginToken,
       story
@@ -158,6 +158,18 @@ class User {
     existingUser.ownStories = response.data.user.stories.map(s => new Story(s));
     return existingUser;
   }
+
+  // * Makes POST request to API to favorite a story
+    static async addFavoriteStory(currentUser, storyId) {
+
+    //use currentUser.favorites to access users favorites
+      const response = await axios.post(`${BASE_URL}/users/${currentUser.username}/favorites/${storyId}`, {
+        token: currentUser.loginToken
+      });
+
+      return response;
+  }
+
 }
 
 /**

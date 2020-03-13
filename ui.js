@@ -114,7 +114,7 @@ $(async function() {
     // call the addStory method, which calls the API and then builds a new story
     const story = await StoryList.addStory(currentUser, requestStoryObj);
     // console.log(story);
-    
+
     // prepend new story to DOM
     let readyStory = generateStoryHTML(story);
     $allStoriesList.prepend(readyStory);
@@ -129,6 +129,22 @@ $(async function() {
     await generateStories();
     $allStoriesList.show();
   });
+
+  /**
+   * Event handler for adding a favorite story
+   */
+
+   $($allStoriesList).on("click", ".star", async function() {
+     // identify storyId on applicable story to favorite
+     let storyId = event.target.parentElement.id;
+
+     // call addFavoriteStory methos which call the API and adds story as a favorote
+     let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
+     console.log(addedFavorite);
+
+     // NEXT NEED TO PUSH ADDED STORY TO currentUser.favorites array?
+
+   });
 
   /**
    * On page load, checks local storage to see if the user is already logged in.
@@ -201,6 +217,7 @@ $(async function() {
     // render story markup
     const storyMarkup = $(`
       <li id="${story.storyId}">
+        <i class="far fa-star star"></i>
         <a class="article-link" href="${story.url}" target="a_blank">
           <strong>${story.title}</strong>
         </a>
