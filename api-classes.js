@@ -23,12 +23,25 @@ class StoryList {
   // is **not** an instance method. Rather, it is a method that is called on the
   // class directly. Why doesn't it make sense for getStories to be an instance method?
 
-  static async getStories() {
-    // query the /stories endpoint (no auth required)
-    const response = await axios.get(`${BASE_URL}/stories`);
+  static async getStories(currentUser) {
+    let response = null;
+    let formattedResponse = null;
+    if ( arguments[0] === undefined ) {
+      // query the /stories endpoint (no auth required)
+      response = await axios.get(`${BASE_URL}/stories`);
+      formattedResponse = response.data.stories;
+    } 
+    else {
+      response = await axios.get(`${BASE_URL}/users/${currentUser.username}`, {
+        params: {
+          token: currentUser.loginToken
+        }
+      });
+      formattedResponse = response.data.user.favorites;
+    }
 
     // turn the plain old story objects from the API into instances of the Story class
-    const stories = response.data.stories.map(story => new Story(story));
+    const stories = formattedResponse.map(story => new Story(story));
 
     // build an instance of our own class using the new array of stories
     const storyList = new StoryList(stories);
@@ -159,18 +172,35 @@ class User {
     return existingUser;
   }
 
+  // TODO: maybe combine the POST/DELETE fav functions to one function but there are other things to do
+
   // * Makes POST request to API to favorite a story
-    static async addFavoriteStory(currentUser, storyId) {
+  static async addFavoriteStory(currentUser, storyId) {
 
-    //use currentUser.favorites to access users favorites
-      const response = await axios.post(`${BASE_URL}/users/${currentUser.username}/favorites/${storyId}`, {
+    // sending POST request to server
+    const response = await axios.post(`${BASE_URL}/users/${currentUser.username}/favorites/${storyId}`, {
+      token: currentUser.loginToken
+    });
+
+    // Replaces currentUser favorites with updated favorites
+    currentUser.favorites = response.data.user.favorites;
+
+    return response;
+  }
+
+  static async removeFavoriteStory(currentUser, storyId) {
+
+    // send DELETE request to server
+    const response = await axios.delete(`${BASE_URL}/users/${currentUser.username}/favorites/${storyId}`, { 
+      params: {
         token: currentUser.loginToken
-      });
+      }
+    });
 
-      // Replaces currentUser favorites with updated favorites
-      currentUser.favorites = response.data.user.favorites;
+    // Replaces currentUser favorites with updated favorites
+    currentUser.favorites = response.data.user.favorites;
 
-      return response;
+    return response;
   }
 
 }

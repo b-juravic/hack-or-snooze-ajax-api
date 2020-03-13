@@ -1,5 +1,3 @@
-console.log('hello i am looking for:');
-
 $(async function() {
   // cache some selectors we'll be using quite a bit
   const $allStoriesList = $("#all-articles-list");
@@ -12,7 +10,8 @@ $(async function() {
   const $navLogOut = $("#nav-logout");
   const $navLoggedIn = $("#nav-logged-in");
   const $navSubmit = $("#nav-submit");
-
+  const $favoritedList = $("#favorited-articles");
+  const $allArticles = $(".articles-container");
 
 
   // global storyList variable
@@ -88,10 +87,31 @@ $(async function() {
   /**
    * Event Handler for revealing new story form
    */
-  $navSubmit.on("click", function(evt) {
+  // $navSubmit.on("click", function(evt) {
+  //   evt.preventDefault();
+  //   $submitForm.slideToggle();
+  // });
+
+  $navLoggedIn.on("click", async function(evt) {
     evt.preventDefault();
-    $submitForm.slideToggle();
-  });
+    console.log('nav click');
+    if( evt.target.id === "nav-submit" ) {
+      console.log("submit clicked")
+      $submitForm.slideToggle();
+    }
+    else if ( evt.target.id === "nav-favorites" ) {
+      console.log('favorite click');
+      $allStoriesList.empty();
+      $favoritedList.show();
+      const favoriteList = await StoryList.getStories(currentUser);
+      // console.log(favoriteList);
+
+      for (let story of favoriteList.stories) {
+        const result = generateStoryHTML(story);
+        $favoritedList.append(result);
+      }
+    }
+  })
 
   /**
    * Event Handler for submitting a new story
@@ -131,40 +151,38 @@ $(async function() {
   });
 
   /**
-   * Event handler for adding a favorite story
+   * Event handler for adding a favorite story                         --------------------- FAVORITES
    */
 
-   $($allStoriesList).on("click", ".star", async function() {
+   $($allArticles).on("click", ".star", async function() {
      // identify storyId on applicable story to favorite
      let storyId = event.target.parentElement.id;
-     let favStarClass = event.target.className;
-     console.log(favStarClass);
+     let $favStar = $(event.target);
+    //  console.log(favStarClass);
 
-     // call addFavoriteStory methos which call the API and adds story as a favorote
+     // call addFavoriteStory method which call the API and adds story as a favorite
     //  let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
 
-
-    // get storyId
-    // check if existing favorite
-    // if not, fire off post request to add
-    // toggle icon class
-
-
+      // TODO: make star state toggle function
 
       if (checkFavoriteStories(storyId)) {
-        //send delete post request
-        favStarClass = "far fa-star star";
-        console.log("in else statement", event.target.className);
+        // change star, DELETE request to remove favorite
+        $favStar.removeClass("fas fa-star star").addClass("far fa-star star");
+        console.log("in if statement ", event.target.className);
+        let something = await User.removeFavoriteStory(currentUser, storyId);
+        console.log(something);
       }
       else {
-        let addedFavorite = await User.addFavoriteStory(currentUser, storyId);
-        favStarClass = "fas fa-star star";
-        console.log("in if statement", event.target.className);
+        // change star, POST request to add favorite
+        console.log("in else statement ", event.target.className);
+        $favStar.removeClass("far fa-star star").addClass("fas fa-star star");
+        await User.addFavoriteStory(currentUser, storyId);
       }
   });
 
    /**
-    * Check currentUser favorites
+    * Check currentUser favorites -
+    * will check if a clicked story is already favorited
     */
 
     function checkFavoriteStories(storyId) {
